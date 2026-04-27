@@ -39,8 +39,7 @@ function resolveAnnotationKey(annotations: string[]): string | null {
   return null
 }
 
-const ANNOTATION_RE = /@\w+(?:\s*\([^)]*\))?/g
-const FIELD_RE = /(private|protected|public)\s+([\w<>,\s\[\]]+?)\s+(\w+)\s*(?:=\s*[^;]+)?\s*;/
+const FIELD_RE= /(private|protected|public)\s+([\w<>,\s\[\]]+?)\s+(\w+)\s*(?:=\s*[^;]+)?\s*;/
 
 export function parseClass(source: string): ParsedClass {
   const clean = stripComments(source)
