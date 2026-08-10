@@ -70,6 +70,7 @@ function buildSeoSection(locale) {
   const style = `
   <style>
     #seo-content{max-width:780px;margin:0 auto;padding:40px 16px 64px;color:#d1d5db;font-size:15px;line-height:1.7;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif}
+    #root:empty ~ #seo-content{position:absolute !important;left:-10000px !important;top:auto !important;width:1px !important;height:1px !important;overflow:hidden !important;clip:rect(0,0,0,0) !important;white-space:nowrap !important}
     #seo-content h2{color:#f3f4f6;font-size:20px;font-weight:600;margin:32px 0 12px;padding-bottom:8px;border-bottom:1px solid #374151}
     #seo-content h1.seo-h1{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
     #seo-content p.intro{color:#9ca3af;margin:8px 0 0}
