@@ -1,14 +1,16 @@
 import type { ConversionWarning } from '../types'
+import { useI18n } from '../i18n'
 
 interface Props {
   warnings: ConversionWarning[]
 }
 
 export default function WarningList({ warnings }: Props) {
+  const { t } = useI18n()
   return (
     <div className="space-y-2">
       <h3 className="text-sm font-medium text-yellow-400">
-        提示（{warnings.length} 项）
+        {t.warningsTitle(warnings.length)}
       </h3>
       <ul className="space-y-1.5">
         {warnings.map((w, i) => (

@@ -4,13 +4,15 @@ import InputPanel from './components/InputPanel'
 import OutputPanel from './components/OutputPanel'
 import type { ConversionResult } from './types'
 import { convert } from './core/converter'
+import { useI18n } from './i18n'
 
 export default function App() {
   const [result, setResult] = useState<ConversionResult | null>(null)
+  const { t, locale } = useI18n()
 
   const handleConvert = (mainClass: string, context: string) => {
     try {
-      const r = convert(mainClass, context)
+      const r = convert(mainClass, context, locale)
       setResult(r)
     } catch (e) {
       setResult({
@@ -18,7 +20,7 @@ export default function App() {
         warnings: [{
           fieldName: '',
           typeName: '',
-          message: `解析失败：${e instanceof Error ? e.message : '未知错误'}`,
+          message: t.parseError(e instanceof Error ? e.message : t.unknownError),
         }],
       })
     }

@@ -7,6 +7,7 @@ import {
   isMapType,
   isStandardType,
 } from './typeDefaults'
+import { warningMessage, type Locale } from './messages'
 
 function buildTypeRegistry(contextClasses: ParsedClass[]): Map<string, ParsedClass> {
   const registry = new Map<string, ParsedClass>()
@@ -26,6 +27,7 @@ function resolveFieldValue(
   registry: Map<string, ParsedClass>,
   warnings: ConversionWarning[],
   depth: number = 0,
+  locale: Locale = 'zh',
 ): unknown {
   if (depth > 5) return null
 
@@ -39,7 +41,7 @@ function resolveFieldValue(
         warnings.push({
           fieldName: javaName,
           typeName: elementType,
-          message: `字段 "${javaName}" 的泛型类型 "${elementType}" 是未识别的实体类，已跳过。请在「上下文」输入框中补充该类的定义。`,
+          message: warningMessage('unknownGeneric', locale, { fieldName: javaName, typeName: elementType }),
         })
         return undefined
       }
@@ -49,7 +51,7 @@ function resolveFieldValue(
         typeName: elementType,
         genericArgs: genericArgs.slice(1),
       }
-      return [resolveFieldValue(syntheticField, registry, warnings, depth + 1)]
+      return [resolveFieldValue(syntheticField, registry, warnings, depth + 1, locale)]
     }
     return []
   }
@@ -69,8 +71,8 @@ function resolveFieldValue(
         typeName: genericArgs[1],
         genericArgs: genericArgs.slice(2),
       }
-      const key = resolveFieldValue(keyField, registry, warnings, depth + 1)
-      const value = resolveFieldValue(valField, registry, warnings, depth + 1)
+      const key = resolveFieldValue(keyField, registry, warnings, depth + 1, locale)
+      const value = resolveFieldValue(valField, registry, warnings, depth + 1, locale)
       return { [String(key)]: value }
     }
     return {}
@@ -84,7 +86,7 @@ function resolveFieldValue(
         warnings.push({
           fieldName: javaName,
           typeName: elementType,
-          message: `字段 "${javaName}" 的数组元素类型 "${elementType}" 是未识别的实体类，已跳过。请在「上下文」输入框中补充该类的定义。`,
+          message: warningMessage('unknownArray', locale, { fieldName: javaName, typeName: elementType }),
         })
         return undefined
       }
@@ -94,7 +96,7 @@ function resolveFieldValue(
         typeName: elementType,
         genericArgs: genericArgs.slice(1),
       }
-      return [resolveFieldValue(syntheticField, registry, warnings, depth + 1)]
+      return [resolveFieldValue(syntheticField, registry, warnings, depth + 1, locale)]
     }
     return []
   }
@@ -107,14 +109,14 @@ function resolveFieldValue(
   // Known entity class (from context)
   const entityClass = registry.get(typeName)
   if (entityClass) {
-    return classToJson(entityClass, registry, warnings, depth + 1)
+    return classToJson(entityClass, registry, warnings, depth + 1, locale)
   }
 
   // Unknown type → warning + skip
   warnings.push({
     fieldName: javaName,
     typeName,
-    message: `字段 "${javaName}" 的类型 "${typeName}" 是未识别的实体类，已跳过。请在「上下文」输入框中补充该类的定义。`,
+    message: warningMessage('unknownType', locale, { fieldName: javaName, typeName }),
   })
   return undefined // will be filtered out
 }
@@ -124,10 +126,11 @@ function classToJson(
   registry: Map<string, ParsedClass>,
   warnings: ConversionWarning[],
   depth: number = 0,
+  locale: Locale = 'zh',
 ): Record<string, unknown> {
   const result: Record<string, unknown> = {}
   for (const field of cls.fields) {
-    const value = resolveFieldValue(field, registry, warnings, depth)
+    const value = resolveFieldValue(field, registry, warnings, depth, locale)
     if (value !== undefined) {
       result[field.jsonName] = value
     }
@@ -135,13 +138,13 @@ function classToJson(
   return result
 }
 
-export function convert(mainSource: string, contextSource: string): ConversionResult {
+export function convert(mainSource: string, contextSource: string, locale: Locale = 'zh'): ConversionResult {
   const mainClass = parseClass(mainSource)
   const contextClasses = parseContext(contextSource)
   const registry = buildTypeRegistry(contextClasses)
   const warnings: ConversionWarning[] = []
 
-  const json = classToJson(mainClass, registry, warnings)
+  const json = classToJson(mainClass, registry, warnings, 0, locale)
 
   return { json, warnings }
 }
