@@ -1,6 +1,11 @@
 import { createContext, useContext, useState, type ReactNode } from 'react'
 import type { Locale } from './core/messages'
 
+export function detectLocaleFromPath(): Locale {
+  if (typeof window === 'undefined') return 'zh'
+  return window.location.pathname.split('/')[1] === 'en' ? 'en' : 'zh'
+}
+
 export interface UiStrings {
   headerSubtitle: string
   entityClassLabel: string
@@ -124,7 +129,7 @@ interface I18nContextValue {
 const I18nContext = createContext<I18nContextValue | null>(null)
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocale] = useState<Locale>('zh')
+  const [locale, setLocale] = useState<Locale>(detectLocaleFromPath)
   return (
     <I18nContext.Provider value={{ locale, setLocale, t: STRINGS[locale] }}>
       {children}
